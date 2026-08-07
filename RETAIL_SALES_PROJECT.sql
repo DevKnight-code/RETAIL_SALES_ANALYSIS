@@ -67,6 +67,168 @@ FROM RETAILSALES
 
 
 ----- DATA ANALYSIS AND BUSINESS KEY PROBLEMS----
+            -- SALES PERFORMANCE----
+  ----------- MONTHLY REVENUE REPORT ------
+SELECT
+YEAR(sale_date) AS Year,
+MONTH(sale_date) AS Month,
+SUM(total_sale) AS Sales
+FROM RETAILSALES
+GROUP BY YEAR(sale_date),MONTH(sale_date)
+ORDER BY Year,Month;
+
+-------YEARLY SALES
+SELECT
+YEAR(sale_date) Year,
+SUM(total_sale) Sales
+FROM RETAILSALES
+GROUP BY YEAR(sale_date);
+
+---- REVENUE CONTRIBUTION BY EACH CATEGORY----
+SELECT
+    category,
+    SUM(total_sale) AS Sales,
+    CAST(
+        ROUND(
+            100.0 * SUM(total_sale) /
+            SUM(SUM(total_sale)) OVER(),
+            2
+        ) AS DECIMAL(10,2)
+    ) AS Contribution
+FROM RETAILSALES
+GROUP BY category;
+
+--- REVENUE BY CATEGORY---
+SELECT
+    category,
+    CAST(SUM(total_sale) AS DECIMAL(12,2)) AS Revenue
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Revenue DESC;
+
+---Revenue by Category with Number of Orders--
+SELECT
+    category,
+    COUNT(*) AS Total_Orders,
+    CAST(SUM(total_sale) AS DECIMAL(12,2)) AS Revenue
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Revenue DESC;
+
+--- CUSTOMER ANALYSIS--
+-- TOP CUSTOMER BY REVENUE--
+SELECT TOP (5)
+    customer_id,
+    COUNT(transactions_id) AS Total_Orders,
+    SUM(quantity) AS Total_Quantity,
+    CAST(SUM(total_sale) AS DECIMAL(12,2)) AS Total_Revenue
+FROM RETAILSALES
+GROUP BY customer_id
+ORDER BY Total_Revenue DESC;
+
+---Top Customers with Average Order Value--
+SELECT TOP (10)
+    customer_id,
+    COUNT(transactions_id) AS Orders,
+    SUM(quantity) AS Quantity_Purchased,
+    CAST(SUM(total_sale) AS DECIMAL(12,2)) AS Revenue,
+    CAST(AVG(total_sale) AS DECIMAL(10,2)) AS Avg_Order_Value
+FROM RETAILSALES
+GROUP BY customer_id
+ORDER BY Revenue DESC;
+
+---REPEAT CUSTOMERS-- 
+SELECT
+customer_id,
+COUNT(*) Orders
+FROM RETAILSALES
+GROUP BY customer_id
+HAVING COUNT(*)>1;
+
+--AVERAGE PURCHASE VALUE-- 
+SELECT
+AVG(total_sale) AvgPurchase
+FROM RETAILSALES;
+
+--AGE GROUP ANALYSIS--
+SELECT
+CASE
+WHEN age<20 THEN 'Teen'
+WHEN age BETWEEN 20 AND 35 THEN 'Young'
+WHEN age BETWEEN 36 AND 50 THEN 'Adult'
+ELSE 'Senior'
+END AgeGroup,
+SUM(total_sale) Sales
+FROM RETAILSALES
+GROUP BY
+CASE
+WHEN age<20 THEN 'Teen'
+WHEN age BETWEEN 20 AND 35 THEN 'Young'
+WHEN age BETWEEN 36 AND 50 THEN 'Adult'
+ELSE 'Senior'
+END;
+
+-------PRODUCT ANALYSIS -------
+-------HIGHEST QUANTITY SOLD BY CATEGORY-------
+SELECT
+    category,
+    SUM(quantity) AS Total_Quantity_Sold
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Total_Quantity_Sold DESC;
+
+--- HIGHEST QUANTITY SOLD PRODUCT----
+SELECT TOP 1
+    category,
+    SUM(quantity) AS Total_Quantity_Sold
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Total_Quantity_Sold DESC;
+
+-- LOWEST SALES CATEGORY--
+SELECT TOP 1
+    category,
+    SUM(total_sale) AS Total_Sales
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Total_Sales ASC;
+
+
+--- HIGHEST SALES CATEGORY--
+SELECT TOP 1
+    category,
+    SUM(total_sale) AS Total_Sales
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Total_Sales DESC;
+
+--- AVERAGE SELLING PRICE BY CATEGORY---
+SELECT
+    category,
+    CAST(AVG(price_per_unit) AS DECIMAL(10,2)) AS Avg_Selling_Price
+FROM RETAILSALES
+GROUP BY category
+ORDER BY Avg_Selling_Price DESC;
+
+---OVERALL AVERAGE SELLING PRICE---
+SELECT
+    CAST(AVG(price_per_unit) AS DECIMAL(10,2)) AS Overall_Average_Selling_Price
+FROM RETAILSALES;
+
+---Highest revenue transaction:---
+SELECT TOP 10
+    transactions_id,
+    customer_id,
+    category,
+    quantity,
+    total_sale
+FROM RETAILSALES
+ORDER BY total_sale DESC;
+
+--- profitability analysis---
+SELECT
+CAST(SUM(total_sale-cogs) AS DECIMAL(12,2)) AS  Profit
+FROM RETAILSALES;
 
 ---Q.1 Write a SQL query to retrieve all columns for sales made on '2022-11-05
   SELECT * FROM RETAILSALES
